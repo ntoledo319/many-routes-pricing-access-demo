@@ -97,15 +97,16 @@ footer{margin-top:32px;border-top:1px solid #ddd;padding-top:12px;font-size:.85r
   <div class="size-note" id="sizeNote">Component width: measuring…</div>
   <div class="demo-frame" id="frame"><div id="root"></div></div>
 
+  <span class="pa-srOnly" aria-live="polite" role="status" id="paLive"></span>
   <div class="a11y-log" id="a11yLog">Screen-reader announcements (aria-live polite) will appear here.</div>
 
   <section class="checks">
     <h2>Keyboard checks you can run here</h2>
     <ul>
       <li><kbd>Tab</kbd> to the switch — the focus ring is visible (never <code>outline:none</code> without a replacement).</li>
-      <li><kbd>Space</kbd> or <kbd>Enter</kbd> flips monthly/yearly and the announcement log records what a screen reader hears.</li>
+      <li><kbd>Space</kbd> or <kbd>Enter</kbd> flips monthly/yearly and the announcement log records the text supplied to the polite live region.</li>
       <li>Choose <em>420px</em> width — the table becomes stacked cards, highlighted plan first, no horizontal scroll.</li>
-      <li><kbd>Tab</kbd> again — the comparison region is focusable and scrollable with arrow keys.</li>
+      <li>Return to <em>960px</em>, then <kbd>Tab</kbd> past the plan links to the comparison region; use arrow keys when the table overflows.</li>
       <li>Choose <em>Broken JSON</em> — the component names the exact problem instead of rendering nothing.</li>
     </ul>
   </section>
@@ -195,6 +196,7 @@ const log = document.getElementById("a11yLog");
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
 function announce(t) {
+  document.getElementById("paLive").textContent = t;
   log.textContent = (log.textContent === "Screen-reader announcements (aria-live polite) will appear here." ? "" : log.textContent + "\n") + t;
 }
 
@@ -230,7 +232,6 @@ function render() {
   html += '<button type="button" role="switch" aria-checked="' + (state.billing === "yearly") + '" aria-label="Billing period, yearly billing" id="paSwitch" class="pa-switch"><span class="pa-knob"></span></button>';
   html += '<span class="pa-toggleLabel ' + (state.billing === "yearly" ? "on" : "") + '">Yearly</span>';
   if (save > 0 && state.billing === "monthly") html += '<span class="pa-badge">Save ' + save + "%</span>";
-  html += '<span class="pa-srOnly" aria-live="polite" role="status" id="paLive"></span>';
   html += "</div>";
 
   const card = p => {
