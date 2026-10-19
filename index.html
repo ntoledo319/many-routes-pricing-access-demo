@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pricing Access — accessible pricing table demo</title>
+<style>
+:root{--accent:#0a7a5c;--text:#111;--muted:#6b6b6b;--surface:#fff}
+*{box-sizing:border-box}
+body{font:16px/1.5 system-ui,sans-serif;color:var(--text);background:#f6f5f2;margin:0;padding:24px}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:1.5rem;margin:.2em 0}
+.intro{color:#444;max-width:62ch}
+.controls{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0;align-items:flex-end}
+.controls label{font-size:.85rem;display:flex;flex-direction:column;gap:2px}
+.controls select{font:inherit;padding:4px 8px;border:1px solid #bbb;border-radius:6px}
+.demo-frame{background:var(--surface);border:1px solid #ddd;border-radius:12px;padding:20px;margin:20px 0;overflow:auto}
+.size-note{font-size:.85rem;color:#666;margin-bottom:8px}
+.a11y-log{background:#fffbe6;border:1px solid #e6d78a;border-radius:8px;padding:12px;font-size:.85rem;white-space:pre-wrap;max-height:200px;overflow:auto;margin:16px 0}
+.checks{margin:24px 0}
+.checks h2{font-size:1.05rem}
+.checks li{margin:.4em 0}
+kbd{background:#eee;border:1px solid #ccc;border-radius:4px;padding:1px 6px;font-family:inherit;font-size:.85em}
+footer{margin-top:32px;border-top:1px solid #ddd;padding-top:12px;font-size:.85rem;color:#666}
+
+/* ---- component styles (mirrors PricingAccess.jsx inline styles) ---- */
+.pa-wrap{font-family:inherit;color:#111;padding:8px}
+.pa-toggleRow{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.pa-toggleLabel{font-weight:400;opacity:.6}
+.pa-toggleLabel.on{font-weight:600;opacity:1}
+.pa-switch{position:relative;width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;padding:0;background:#767676;transition:background 150ms ease}
+.pa-switch[aria-checked="true"]{background:var(--accent)}
+.pa-switch:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pa-knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left 150ms ease}
+.pa-switch[aria-checked="true"] .pa-knob{left:22px}
+@media (prefers-reduced-motion: reduce){.pa-switch,.pa-knob{transition:none}}
+.pa-badge{background:var(--accent);color:#fff;border-radius:999px;padding:2px 10px;font-size:13px}
+.pa-srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.pa-grid{display:grid;gap:12px;align-items:start}
+.pa-card{border:1px solid #ddd;border-radius:12px;padding:16px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.pa-card.hi{border:2px solid var(--accent)}
+.pa-h3{margin:0;font-size:18px;display:flex;align-items:center;gap:8px}
+.pa-planBadge{font-size:11px;background:#eee;border-radius:999px;padding:2px 8px;font-weight:600}
+.pa-blurb{margin:0;font-size:13px;opacity:.7}
+.pa-price{margin:4px 0 8px;font-size:28px;font-weight:700}
+.pa-per{font-size:14px;font-weight:400;opacity:.6}
+.pa-cardFeatures{margin:0;padding-left:0;font-size:14px;line-height:1.6;list-style:none}
+.pa-cta{display:block;text-align:center;text-decoration:none;border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-weight:600;margin-top:auto;color:var(--accent);background:transparent}
+.pa-cta.hi{background:var(--accent);color:#fff}
+.pa-cardStack{display:flex;flex-direction:column;gap:12px}
+.pa-matrixWrap{margin-top:20px;overflow-x:auto;border-radius:8px}
+.pa-matrixWrap:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pa-table{width:100%;border-collapse:collapse;font-size:14px;color:#111}
+.pa-table th,.pa-table td{border:1px solid #ddd;padding:8px 10px;text-align:center}
+.pa-table th[scope=row]{position:sticky;left:0;background:#fff;z-index:1;text-align:left;font-weight:600}
+.pa-table thead th{background:#f4f4f2;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Pricing Access — accessible pricing table</h1>
+  <p class="intro">The demo page for the Pricing Access Framer component. The billing toggle is a real <code>role="switch"</code> (Tab / Space / Enter, visible focus ring), price changes are announced politely to screen readers, the comparison matrix is keyboard reachable, and the mobile card stack is driven by the component's <em>own</em> width — set it below the breakpoint and watch it reflow without a single media query. Test it keyboard-only right now.</p>
+
+  <div class="controls">
+    <label>Container width
+      <select id="widthSel">
+        <option value="auto">Auto (fill page)</option>
+        <option value="960">960px — desktop</option>
+        <option value="620">620px — small desktop</option>
+        <option value="420">420px — mobile</option>
+        <option value="360">360px — small phone</option>
+      </select>
+    </label>
+    <label>Accent colour
+      <select id="themeSel">
+        <option value="#0a7a5c">Green (default)</option>
+        <option value="#1a4d8f">Blue</option>
+        <option value="#8f1a4d">Berry</option>
+        <option value="#444444">Graphite</option>
+      </select>
+    </label>
+    <label>Default billing
+      <select id="billingSel">
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+    </label>
+    <label>Plans source
+      <select id="srcSel">
+        <option value="panel">Panel-style plans (3)</option>
+        <option value="json">JSON input (4 plans)</option>
+        <option value="bad">Broken JSON (see error)</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="size-note" id="sizeNote">Component width: measuring…</div>
+  <div class="demo-frame" id="frame"><div id="root"></div></div>
+
+  <div class="a11y-log" id="a11yLog">Screen-reader announcements (aria-live polite) will appear here.</div>
+
+  <section class="checks">
+    <h2>Keyboard checks you can run here</h2>
+    <ul>
+      <li><kbd>Tab</kbd> to the switch — the focus ring is visible (never <code>outline:none</code> without a replacement).</li>
+      <li><kbd>Space</kbd> or <kbd>Enter</kbd> flips monthly/yearly and the announcement log records what a screen reader hears.</li>
+      <li>Choose <em>420px</em> width — the table becomes stacked cards, highlighted plan first, no horizontal scroll.</li>
+      <li><kbd>Tab</kbd> again — the comparison region is focusable and scrollable with arrow keys.</li>
+      <li>Choose <em>Broken JSON</em> — the component names the exact problem instead of rendering nothing.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Standalone demonstration of Pricing Access pricing and validation logic. This plain-HTML demo is separate from the paid Framer component; it does not include that component’s source or installation URL. Framer is a trademark of its respective owner; this independent component is not affiliated with or endorsed by Framer. All plan data is fictional.
+  </footer>
+</div>
+
+<script>
+// Demo runner: same logic as the Framer component, without the Framer runtime.
+// The pure functions (normalisePlans, featureRows, formatPrice, savingsPercent)
+// are identical to the exports in PricingAccess.jsx and are exercised by tests.
+
+const DEFAULT_PLANS = [
+  { name: "Starter", monthly: 0, yearly: 0, blurb: "For trying things out", features: ["Projects: 1", "Support: Community"], badge: "", highlight: false, cta: "Start free", link: "#" },
+  { name: "Growth", monthly: 12, yearly: 120, blurb: "For small teams shipping weekly", features: ["Projects: 5", "Support: Priority", "Custom domain: Yes"], badge: "Popular", highlight: true, cta: "Choose Growth", link: "#" },
+  { name: "Scale", monthly: 29, yearly: 290, blurb: "For teams with customers waiting", features: ["Projects: Unlimited", "Support: Priority", "Custom domain: Yes", "SSO: Yes"], badge: "", highlight: false, cta: "Contact sales", link: "#" },
+];
+
+const JSON_PLANS = JSON.stringify([
+  { name: "Solo", monthly: 9, yearly: 90, blurb: "One person, one site", features: ["Projects: 1", "Support: Community"], highlight: false, cta: "Start solo", link: "#" },
+  { name: "Duo", monthly: 19, yearly: 180, blurb: "Two people, a few sites", features: ["Projects: 3", "Support: Email", "Custom domain"], badge: "", highlight: false, cta: "Choose Duo", link: "#" },
+  { name: "Team", monthly: 49, yearly: 470, blurb: "The whole team, every client", features: ["Projects: Unlimited", "Support: Priority", "Custom domain", "Roles"], badge: "Popular", highlight: true, cta: "Choose Team", link: "#" },
+  { name: "Agency", monthly: 99, yearly: 950, blurb: "White-label and volume", features: ["Projects: Unlimited", "Support: Dedicated", "Custom domain", "Roles", "White-label"], highlight: false, cta: "Talk to us", link: "#" },
+]);
+
+const BROKEN = '{"name": "Only one plan", "monthly": 5';
+
+function normalisePlans(raw) {
+  let data = raw;
+  if (typeof raw === "string") {
+    const t = raw.trim();
+    if (!t) return { plans: [], error: null };
+    try { data = JSON.parse(t); } catch (e) { return { plans: [], error: "JSON does not parse: " + e.message }; }
+  }
+  if (!Array.isArray(data)) return { plans: [], error: "Plans must be a JSON array of plan objects" };
+  if (data.length === 0) return { plans: [], error: "At least one plan is required" };
+  if (data.length > 6) return { plans: [], error: "Up to 6 plans are supported" };
+  const plans = [];
+  for (let i = 0; i < data.length; i++) {
+    const p = data[i];
+    if (typeof p !== "object" || p === null) return { plans: [], error: "Plan " + (i + 1) + " is not an object" };
+    const name = String(p.name ?? "").trim();
+    if (!name) return { plans: [], error: "Plan " + (i + 1) + " is missing a name" };
+    const monthly = Number(p.monthly), yearly = Number(p.yearly);
+    if (!Number.isFinite(monthly) || monthly < 0) return { plans: [], error: 'Plan "' + name + '" monthly price must be a number ≥ 0' };
+    if (!Number.isFinite(yearly) || yearly < 0) return { plans: [], error: 'Plan "' + name + '" yearly price must be a number ≥ 0' };
+    const features = Array.isArray(p.features) ? p.features.map(String) : String(p.features ?? "").split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+    plans.push({ name, monthly, yearly, blurb: String(p.blurb ?? ""), features, badge: p.badge ? String(p.badge) : "", highlight: p.highlight === true || p.highlight === "true" || p.highlight === 1, cta: p.cta ? String(p.cta) : "", link: p.link ? String(p.link) : "" });
+  }
+  return { plans, error: null };
+}
+
+function featureRows(plans) {
+  const rows = [], index = new Map();
+  for (const p of plans) {
+    for (const f of p.features) {
+      const label = f.split(":")[0].trim();
+      if (!label) continue;
+      if (!index.has(label)) { index.set(label, rows.length); rows.push({ label, values: plans.map(() => "") }); }
+      const value = f.includes(":") ? f.split(":").slice(1).join(":").trim() : "✓";
+      rows[index.get(label)].values[plans.indexOf(p)] = value;
+    }
+  }
+  return rows;
+}
+
+function formatPrice(n, currency, locale) {
+  if (n === 0) return "Free";
+  try { return new Intl.NumberFormat(locale || "en-US", { style: "currency", currency: currency || "USD", maximumFractionDigits: n % 1 ? 2 : 0 }).format(n); }
+  catch { return String(n); }
+}
+
+function savingsPercent(plans) {
+  const withYearly = plans.filter(p => p.yearly > 0 && p.monthly > 0);
+  if (!withYearly.length) return 0;
+  const best = Math.max(...withYearly.map(p => Math.round((1 - p.yearly / 12 / p.monthly) * 100)));
+  return Math.max(0, best);
+}
+
+const state = { billing: "monthly", source: "panel", width: "auto", accent: "#0a7a5c" };
+const root = document.getElementById("root");
+const frame = document.getElementById("frame");
+const log = document.getElementById("a11yLog");
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function announce(t) {
+  log.textContent = (log.textContent === "Screen-reader announcements (aria-live polite) will appear here." ? "" : log.textContent + "\n") + t;
+}
+
+function render() {
+  const raw = state.source === "json" ? JSON_PLANS : state.source === "bad" ? BROKEN : DEFAULT_PLANS;
+  const { plans, error } = normalisePlans(raw);
+
+  // width control
+  if (state.width === "auto") { frame.style.maxWidth = ""; }
+  else { frame.style.maxWidth = state.width + "px"; }
+  document.documentElement.style.setProperty("--accent", state.accent);
+
+  if (error) {
+    root.innerHTML = '<div style="border:1px solid #c0392b;padding:16px;border-radius:8px;color:#c0392b"><strong>Pricing Access:</strong> ' + esc(error) + "</div>";
+    noteWidth();
+    return;
+  }
+
+  const rows = featureRows(plans);
+  const save = savingsPercent(plans);
+  const measured = root.parentElement.clientWidth;
+  const isNarrow = measured < 640;
+  const price = p => state.billing === "monthly" ? p.monthly : p.yearly;
+  const period = state.billing === "monthly" ? "month" : "year";
+
+  let html = '<div class="pa-wrap">';
+  // toggle row
+  html += '<div class="pa-toggleRow">';
+  html += '<span class="pa-toggleLabel ' + (state.billing === "monthly" ? "on" : "") + '">Monthly</span>';
+  html += '<button type="button" role="switch" aria-checked="' + (state.billing === "yearly") + '" aria-label="Billing period, yearly billing" id="paSwitch"><span class="pa-knob"></span></button>';
+  html += '<span class="pa-toggleLabel ' + (state.billing === "yearly" ? "on" : "") + '">Yearly</span>';
+  if (save > 0 && state.billing === "monthly") html += '<span class="pa-badge">Save ' + save + "%</span>";
+  html += '<span class="pa-srOnly" aria-live="polite" role="status" id="paLive"></span>';
+  html += "</div>";
+
+  const card = p => {
+    let s = '<section class="pa-card' + (p.highlight ? " hi" : "") + '" aria-label="' + esc(p.name) + ' plan">';
+    s += '<header><h3 class="pa-h3">' + esc(p.name) + (p.badge ? ' <span class="pa-planBadge">' + esc(p.badge) + "</span>" : "") + "</h3>";
+    s += '<p class="pa-blurb">' + esc(p.blurb) + "</p>";
+    s += '<p class="pa-price">' + esc(formatPrice(price(p))) + (price(p) === 0 ? "" : '<span class="pa-per">/' + period + "</span>") + "</p></header>";
+    if (isNarrow) {
+      s += '<ul class="pa-cardFeatures">' + p.features.map(f => "<li>" + esc(f) + "</li>").join("") + "</ul>";
+    }
+    if (p.cta) s += '<a class="pa-cta' + (p.highlight ? " hi" : "") + '" href="' + esc(p.link || "#") + '">' + esc(p.cta) + "</a>";
+    s += "</section>";
+    return s;
+  };
+
+  if (isNarrow) {
+    const sorted = [...plans].sort((a, b) => Number(b.highlight) - Number(a.highlight));
+    html += '<div class="pa-cardStack">' + sorted.map(card).join("") + "</div>";
+  } else {
+    html += '<div class="pa-grid" style="grid-template-columns:repeat(' + Math.min(plans.length, 4) + ',1fr)">' + plans.map(card).join("") + "</div>";
+    if (rows.length) {
+      html += '<div class="pa-matrixWrap" role="region" aria-label="Feature comparison" tabindex="0"><table class="pa-table"><caption class="pa-srOnly">Feature comparison across plans</caption><thead><tr><th scope="col">Feature</th>';
+      for (const p of plans) html += '<th scope="col">' + esc(p.name) + (p.highlight ? " ★" : "") + "</th>";
+      html += "</tr></thead><tbody>";
+      for (const r of rows) {
+        html += '<tr><th scope="row">' + esc(r.label) + "</th>";
+        for (const v of r.values) html += "<td>" + (v ? esc(v) : "—") + "</td>";
+        html += "</tr>";
+      }
+      html += "</tbody></table></div>";
+    }
+  }
+  html += "</div>";
+  root.innerHTML = html;
+
+  const sw = document.getElementById("paSwitch");
+  sw.addEventListener("click", () => {
+    state.billing = state.billing === "monthly" ? "yearly" : "monthly";
+    const main = plans.find(p => p.highlight) ?? plans[0];
+    render();
+    announce(main.name + " is now " + formatPrice(state.billing === "monthly" ? main.monthly : main.yearly) + " per " + (state.billing === "monthly" ? "month" : "year"));
+  });
+  noteWidth();
+}
+
+function noteWidth() {
+  const w = root.parentElement.clientWidth;
+  document.getElementById("sizeNote").textContent = "Component width: " + w + "px" + (w < 640 ? " → stacked cards (own width, not viewport)" : " → grid + matrix");
+}
+
+new ResizeObserver(() => { noteWidth(); render(); }).observe(frame);
+document.getElementById("widthSel").addEventListener("change", e => { state.width = e.target.value; render(); });
+document.getElementById("themeSel").addEventListener("change", e => { state.accent = e.target.value; render(); });
+document.getElementById("billingSel").addEventListener("change", e => { state.billing = e.target.value; render(); });
+document.getElementById("srcSel").addEventListener("change", e => { state.source = e.target.value; render(); });
+render();
+</script>
+</body>
+</html>
