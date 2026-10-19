@@ -204,6 +204,7 @@ function render() {
   const focused = root.contains(document.activeElement) ? document.activeElement : null;
   const restoreSwitch = focused?.id === "paSwitch";
   const restoreMatrix = focused?.getAttribute("role") === "region";
+  const restorePlan = focused?.getAttribute("data-pa-plan");
   const raw = state.source === "json" ? JSON_PLANS : state.source === "bad" ? BROKEN : DEFAULT_PLANS;
   const { plans, error } = normalisePlans(raw);
 
@@ -242,7 +243,7 @@ function render() {
     if (isNarrow) {
       s += '<ul class="pa-cardFeatures">' + p.features.map(f => "<li>" + esc(f) + "</li>").join("") + "</ul>";
     }
-    if (p.cta) s += '<a class="pa-cta' + (p.highlight ? " hi" : "") + '" href="' + esc(p.link || "#") + '">' + esc(p.cta) + "</a>";
+    if (p.cta) s += '<a data-pa-plan="' + plans.indexOf(p) + '" class="pa-cta' + (p.highlight ? " hi" : "") + '" href="' + esc(p.link || "#") + '">' + esc(p.cta) + "</a>";
     s += "</section>";
     return s;
   };
@@ -266,8 +267,12 @@ function render() {
   }
   html += "</div>";
   root.innerHTML = html;
-  if (restoreSwitch) document.getElementById("paSwitch")?.focus({preventScroll: true});
-  if (restoreMatrix) root.querySelector('[role="region"]')?.focus({preventScroll: true});
+  const target = restorePlan != null
+    ? root.querySelector(`[data-pa-plan="${restorePlan}"]`)
+    : restoreMatrix
+      ? root.querySelector('[role="region"]') || document.getElementById("paSwitch")
+      : restoreSwitch ? document.getElementById("paSwitch") : null;
+  target?.focus({preventScroll: true});
 
   const sw = document.getElementById("paSwitch");
   sw.addEventListener("click", () => {
