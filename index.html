@@ -199,6 +199,9 @@ function announce(t) {
 }
 
 function render() {
+  const focused = root.contains(document.activeElement) ? document.activeElement : null;
+  const restoreSwitch = focused?.id === "paSwitch";
+  const restoreMatrix = focused?.getAttribute("role") === "region";
   const raw = state.source === "json" ? JSON_PLANS : state.source === "bad" ? BROKEN : DEFAULT_PLANS;
   const { plans, error } = normalisePlans(raw);
 
@@ -224,7 +227,7 @@ function render() {
   // toggle row
   html += '<div class="pa-toggleRow">';
   html += '<span class="pa-toggleLabel ' + (state.billing === "monthly" ? "on" : "") + '">Monthly</span>';
-  html += '<button type="button" role="switch" aria-checked="' + (state.billing === "yearly") + '" aria-label="Billing period, yearly billing" id="paSwitch"><span class="pa-knob"></span></button>';
+  html += '<button type="button" role="switch" aria-checked="' + (state.billing === "yearly") + '" aria-label="Billing period, yearly billing" id="paSwitch" class="pa-switch"><span class="pa-knob"></span></button>';
   html += '<span class="pa-toggleLabel ' + (state.billing === "yearly" ? "on" : "") + '">Yearly</span>';
   if (save > 0 && state.billing === "monthly") html += '<span class="pa-badge">Save ' + save + "%</span>";
   html += '<span class="pa-srOnly" aria-live="polite" role="status" id="paLive"></span>';
@@ -262,6 +265,8 @@ function render() {
   }
   html += "</div>";
   root.innerHTML = html;
+  if (restoreSwitch) document.getElementById("paSwitch")?.focus({preventScroll: true});
+  if (restoreMatrix) root.querySelector('[role="region"]')?.focus({preventScroll: true});
 
   const sw = document.getElementById("paSwitch");
   sw.addEventListener("click", () => {
